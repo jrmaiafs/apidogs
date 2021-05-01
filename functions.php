@@ -1,5 +1,11 @@
 <?php
 
+add_filter('rest_endpoints', function($endpoints) {
+    unset($endpoints['/wp/v2/users']);
+    unset($endpoints['/wp/v2/users/(?P<id>[\d]+)']);
+    return $endpoints;
+});
+
 $dirbase = get_template_directory();
 
 require_once $dirbase . '/endpoints/user_post.php';
