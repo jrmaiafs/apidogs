@@ -30,7 +30,8 @@
             'meta_input' => [
                 'weight' => $weight,
                 'age' => $age,
-                'accesses' => 0
+                'accesses' => 0,
+                'curtidas' => 0
             ]
         ];
 

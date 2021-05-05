@@ -2,7 +2,6 @@
 
     function api_user_get($request) {
         $user = wp_get_current_user();
-        
         $user_id = $user->ID;
 
         if($user_id === 0) {

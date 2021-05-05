@@ -5,6 +5,7 @@
         $user = get_userdata($post->post_author);
         $total_comments = get_comments_number($post->ID);
 
+
         return [
             'id' => $post->ID,
             'author' => $user->user_login,
@@ -14,8 +15,9 @@
             'weight' => $post_meta['weight'][0],
             'age' => $post_meta['age'][0],
             'accesses' => $post_meta['accesses'][0],
-            'total_comments' => $total_comments
-
+            'total_comments' => $total_comments,
+            'curtidas' => $post_meta['curtidas'][0],
+            'user_ID' => $user->ID
         ];
     }
 
@@ -58,6 +60,7 @@
     // photo list
 
     function api_photos_get($request) {
+    $user = wp_get_current_user();
        $_total = sanitize_text_field($request['_total']) ?: 6;
        $_page = sanitize_text_field($request['_page']) ?: 1;
        $_user = sanitize_text_field($request['_user']) ?: 0;
@@ -86,7 +89,7 @@
        if($posts) {
            foreach($posts as $post) {
                 $photos[] = photo_data($post);
-           }
+           };
        };
 
        return rest_ensure_response($photos);
@@ -102,5 +105,82 @@
     };
 
     add_action( 'rest_api_init', 'register_api_photos_get');
+
+    
+    // photo curtir 
+    
+    function api_photo_curtir($request) {
+        $user = wp_get_current_user();
+
+        $post_id = $request['id'];
+        $post = get_post($post_id);
+
+
+        if(!isset($post) || empty($post_id)) {
+            $response = new WP_Error('error', 'Post não encontrado', ['status' => 404]);
+            return rest_ensure_response($response);
+        }
+        $request['id'] ? add_post_meta($post_id, 'ids_curtidas', $user->ID) : 0;
+        return rest_ensure_response($request);
+
+        $photo = photo_data($post);
+        $photo['curtidas'] = (int) $photo['curtidas'] + 1;
+        update_post_meta($post_id, 'curtidas', $photo['curtidas']);
+        
+        $post_meta_curtidas = get_post_meta($post->ID);
+
+        $response = [
+            'curtidas' => $photo['curtidas'],
+            'ids_photo_likes' =>  $post_meta_curtidas['ids_curtidas']
+
+        ];
+       
+
+        return rest_ensure_response($response);
+    }
+ 
+
+    function register_api_photo_curtir() {
+        register_rest_route( 'api', '/photo/curtir/(?P<id>[0-9]+)', [
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => 'api_photo_curtir',
+        ]);
+    };
+
+    add_action( 'rest_api_init', 'register_api_photo_curtir');
+
+        // photo curtir list 
+    
+        function api_photo_curtidas($request) {
+            $user = wp_get_current_user();
+
+            $args = [
+                'posts_per_page'   => -1,
+                'post_type'        => 'post',
+            ];
+
+            $query = new WP_Query( $args );
+            return rest_ensure_response($query);
+            $post_meta_curtidas = get_post_meta($post->ID);
+    
+            $response = [
+                'curtidas' => $photo['curtidas'],
+                'ids_photo_likes' =>  $post_meta_curtidas['ids_curtidas']
+    
+            ];
+           
+    
+            return rest_ensure_response($response);
+        }
+     
+    
+        function register_api_photo_curtidas() {
+            register_rest_route( 'api', '/photo/curtir', [
+                'methods' => WP_REST_Server::READABLE,
+                'callback' => 'api_photo_curtidas',
+            ]);
+        };
+    
+        add_action( 'rest_api_init', 'register_api_photo_curtidas');
 
 ?>
