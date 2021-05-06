@@ -120,9 +120,7 @@
             $response = new WP_Error('error', 'Post não encontrado', ['status' => 404]);
             return rest_ensure_response($response);
         }
-        $request['id'] ? add_post_meta($post_id, 'ids_curtidas', $user->ID) : 0;
-        return rest_ensure_response($request);
-
+        add_post_meta($post_id, 'ids_curtidas', $user->ID);
         $photo = photo_data($post);
         $photo['curtidas'] = (int) $photo['curtidas'] + 1;
         update_post_meta($post_id, 'curtidas', $photo['curtidas']);
@@ -134,8 +132,6 @@
             'ids_photo_likes' =>  $post_meta_curtidas['ids_curtidas']
 
         ];
-       
-
         return rest_ensure_response($response);
     }
  
@@ -154,13 +150,15 @@
         function api_photo_curtidas($request) {
             $user = wp_get_current_user();
 
-            $args = [
-                'posts_per_page'   => -1,
-                'post_type'        => 'post',
-            ];
-
-            $query = new WP_Query( $args );
-            return rest_ensure_response($query);
+            $post_id = $request['id'];
+            $post = get_post($post_id);
+    
+    
+            if(!isset($post) || empty($post_id)) {
+                $response = new WP_Error('error', 'Post não encontrado', ['status' => 404]);
+                return rest_ensure_response($response);
+            }
+            $photo = photo_data($post);
             $post_meta_curtidas = get_post_meta($post->ID);
     
             $response = [
@@ -168,14 +166,12 @@
                 'ids_photo_likes' =>  $post_meta_curtidas['ids_curtidas']
     
             ];
-           
-    
             return rest_ensure_response($response);
         }
      
     
         function register_api_photo_curtidas() {
-            register_rest_route( 'api', '/photo/curtir', [
+            register_rest_route( 'api', '/photo/likes/(?P<id>[0-9]+)', [
                 'methods' => WP_REST_Server::READABLE,
                 'callback' => 'api_photo_curtidas',
             ]);
