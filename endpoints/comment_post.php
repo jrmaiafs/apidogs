@@ -16,13 +16,16 @@
             $response = new WP_Error('error', 'Dados incompletos', ['status' => 422]);
             return rest_ensure_response($response);
         }
+        $post_photo_id = get_post($request['id']);
+
         
 
        $response = [
             'comment_author' => $user->user_login,
             'comment_content' => $comment,
             'comment_post_ID' => $post_id,
-            'user_id' => $user_id
+            'user_id' => $user_id,
+            'comment_agent' => (int) $post_photo_id->post_author
        ];
 
        $comment_id = wp_insert_comment($response);

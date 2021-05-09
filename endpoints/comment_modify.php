@@ -12,7 +12,7 @@
  
 
     function register_api_comment_delete() {
-        register_rest_route( 'api', '/comment/delete(?P<id>[0-9]+)', [
+        register_rest_route( 'api', '/comment/delete', [
             'methods' => WP_REST_Server::DELETABLE,
             'callback' => 'api_comment_delete',
         ]);
@@ -34,7 +34,7 @@
  
 
     function register_api_comment_edit() {
-        register_rest_route( 'api', '/comment/edit(?P<id>[0-9]+)', [
+        register_rest_route( 'api', '/comment/edit', [
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => 'api_comment_edit',
         ]);
