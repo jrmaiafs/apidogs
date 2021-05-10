@@ -1,45 +1,32 @@
 <?php 
 
     function api_comment_delete($request) {
-        $post_id = $request['id'];
+        $comment_id = $request['id'];
+        $user = wp_get_current_user();
+        $user_id = $user->ID;
 
-        $comments = get_comments([
-            'post_id' => $post_id
-        ]);
+        if($user_id === 0) {
+            $response = new WP_Error('error', 'Usuário não possuí permissão', ['status' => 401]);
+            return rest_ensure_response($response);
+        }
 
-        return rest_ensure_response($comments);
+
+
+        $response = wp_delete_comment( $comment_id, $force_delete = true );
+
+        return rest_ensure_response($response);
+
     }
+
  
 
     function register_api_comment_delete() {
-        register_rest_route( 'api', '/comment/delete', [
+        register_rest_route( 'api', '/comment/delete/(?P<id>[0-9]+)', [
             'methods' => WP_REST_Server::DELETABLE,
             'callback' => 'api_comment_delete',
         ]);
     };
 
     add_action( 'rest_api_init', 'register_api_comment_delete');
-
-    // comment edit
-
-    function api_comment_edit($request) {
-        $post_id = $request['id'];
-
-        $comments = get_comments([
-            'post_id' => $post_id
-        ]);
-
-        return rest_ensure_response($comments);
-    }
- 
-
-    function register_api_comment_edit() {
-        register_rest_route( 'api', '/comment/edit', [
-            'methods' => WP_REST_Server::CREATABLE,
-            'callback' => 'api_comment_edit',
-        ]);
-    };
-
-    add_action( 'rest_api_init', 'register_api_comment_edit');
 
 ?>
